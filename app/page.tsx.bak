@@ -32,6 +32,7 @@ const SpaceInvaders: React.FC = () => {
   const [alienDirection, setAlienDirection] = useState(1); // 1 for right, -1 for left
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
+  const [alienSpeed, setAlienSpeed] = useState(500);
 
   const movePlayer = (direction: "left" | "right") => {
     setPlayerX((prev) =>
@@ -73,7 +74,26 @@ const SpaceInvaders: React.FC = () => {
         y: edgeReached ? alien.y + 10 : alien.y,
       }));
 
-      const filteredAliens = newAliens.filter((alien) => {
+      const hit = bullets.some((bullet) =>
+        newAliens.some(
+          (alien) =>
+            !alien.destroyed &&
+            bullet.x > alien.x &&
+            bullet.x < alien.x + ALIEN_WIDTH &&
+            bullet.y > alien.y &&
+            bullet.y < alien.y + ALIEN_HEIGHT
+        )
+      );
+
+      if (hit) {
+        setScore((prevScore) => prevScore + 10);
+      }
+
+      if (newAliens.some((alien) => alien.y + ALIEN_HEIGHT >= GAME_HEIGHT)) {
+        setGameOver(true);
+      }
+
+      return newAliens.filter((alien) => {
         const wasHit = bullets.some(
           (bullet) =>
             bullet.x > alien.x &&
@@ -81,15 +101,8 @@ const SpaceInvaders: React.FC = () => {
             bullet.y > alien.y &&
             bullet.y < alien.y + ALIEN_HEIGHT
         );
-        if (wasHit) setScore((prevScore) => prevScore + 10);
         return !wasHit;
       });
-
-      if (filteredAliens.some((alien) => alien.y + ALIEN_HEIGHT >= GAME_HEIGHT)) {
-        setGameOver(true);
-      }
-
-      return filteredAliens;
     });
   }, [bullets, alienDirection]);
 
@@ -99,6 +112,7 @@ const SpaceInvaders: React.FC = () => {
     setAliens(createAliens());
     setAlienDirection(1);
     setScore(0);
+    setAlienSpeed(500);
     setGameOver(false);
   };
 
@@ -123,6 +137,16 @@ const SpaceInvaders: React.FC = () => {
 
     return () => clearInterval(interval);
   }, [updateAliens, bullets, gameOver]);
+
+  useEffect(() => {
+    if (gameOver) return;
+
+    const interval = setInterval(() => {
+      setAlienSpeed((prev) => Math.max(100, prev - 20));
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [gameOver]);
 
   return (
     <div
