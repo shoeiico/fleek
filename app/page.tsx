@@ -137,7 +137,7 @@ const SpaceInvaders: React.FC = () => {
         textAlign: "center",
       }}
     >
-      <h1>Space Invaders</h1>
+      <h1>- Space Invaders -</h1>
       <div style={{ marginBottom: "20px" }}>
         <p>
           <strong>Controls:</strong>
